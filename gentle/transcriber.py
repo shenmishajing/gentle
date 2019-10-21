@@ -97,16 +97,16 @@ def do_transcription(wav_file, output_wav_file, output_file):
     import logging
     logging.getLogger().setLevel('INFO')
 
-    import gentle
-    from gentle import standard_kaldi
-    from gentle import kaldi_queue
+    from . import resources
+    from . import resample
+    from . import standard_kaldi
 
-    resources = gentle.Resources()
+    resources = resources.Resources()
 
-    k_queue = kaldi_queue.build(resources, 3)
+    k_queue = standard_kaldi.kaldi_queue.build(resources, 3)
     trans = MultiThreadedTranscriber(k_queue)
 
-    with gentle.resampled(wav_file, output_wav_file) as filename:
+    with resample.resampled(wav_file, output_wav_file) as filename:
         words, duration = trans.transcribe(filename)
 
     open(output_file, 'w').write(transcription.Transcription(words = words).to_json())
