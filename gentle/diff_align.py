@@ -3,11 +3,17 @@ import json
 import os
 import sys
 
-from gentle import metasentence
-from gentle import language_model
-from gentle import standard_kaldi
-from gentle import transcription
-from gentle.resources import Resources
+# from gentle import metasentence
+# from gentle import language_model
+# from gentle import standard_kaldi
+# from gentle import transcription
+# from gentle.resources import Resources
+
+from . import metasentence
+from . import language_model
+from . import standard_kaldi
+from . import transcription
+from .resources import Resources
 
 
 # TODO(maxhawkins): try using the (apparently-superior) time-mediated dynamic
@@ -39,12 +45,8 @@ def align(alignment, ms, **kwargs):
                 hyp_token = alignment[a]
                 phones = hyp_token.phones or []
 
-                out.append(transcription.Word(
-                    case=transcription.Word.NOT_FOUND_IN_TRANSCRIPT,
-                    phones=phones,
-                    start=hyp_token.start,
-                    duration=hyp_token.duration,
-                    word=word))
+                out.append(transcription.Word(case = transcription.Word.NOT_FOUND_IN_TRANSCRIPT, phones = phones,
+                    start = hyp_token.start, duration = hyp_token.duration, word = word))
             continue
 
         display_word = display_seq[b]
@@ -55,31 +57,24 @@ def align(alignment, ms, **kwargs):
             hyp_token = alignment[a]
             phones = hyp_token.phones or []
 
-            out.append(transcription.Word(
-                case=transcription.Word.SUCCESS,
-                startOffset=start_offset,
-                endOffset=end_offset,
-                word=display_word,
-                alignedWord=hyp_word,
-                phones=phones,
-                start=hyp_token.start,
-                duration=hyp_token.duration))
+            out.append(transcription.Word(case = transcription.Word.SUCCESS, startOffset = start_offset,
+                endOffset = end_offset, word = display_word, alignedWord = hyp_word, phones = phones,
+                start = hyp_token.start, duration = hyp_token.duration))
 
         elif op in ['insert', 'replace']:
-            out.append(transcription.Word(
-                case=transcription.Word.NOT_FOUND_IN_AUDIO,
-                startOffset=start_offset,
-                endOffset=end_offset,
-                word=display_word))
+            out.append(transcription.Word(case = transcription.Word.NOT_FOUND_IN_AUDIO, startOffset = start_offset,
+                endOffset = end_offset, word = display_word))
     return out
+
 
 def word_diff(a, b):
     '''Like difflib.SequenceMatcher but it only compares one word
     at a time. Returns an iterator whose elements are like
     (operation, index in a, index in b)'''
-    matcher = difflib.SequenceMatcher(a=a, b=b)
+    matcher = difflib.SequenceMatcher(a = a, b = b)
     for op, a_idx, _, b_idx, _ in by_word(matcher.get_opcodes()):
         yield (op, a_idx, b_idx)
+
 
 def by_word(opcodes):
     '''Take difflib.SequenceMatcher.get_opcodes() output and
@@ -88,23 +83,24 @@ def by_word(opcodes):
     for op, s1, e1, s2, e2 in opcodes:
         if op == 'delete':
             for i in range(s1, e1):
-                yield (op, i, i+1, s2, s2)
+                yield (op, i, i + 1, s2, s2)
         elif op == 'insert':
             for i in range(s2, e2):
-                yield (op, s1, s1, i, i+1)
+                yield (op, s1, s1, i, i + 1)
         else:
-            len1 = e1-s1
-            len2 = e2-s2
+            len1 = e1 - s1
+            len2 = e2 - s2
             for i1, i2 in zip(range(s1, e1), range(s2, e2)):
                 yield (op, i1, i1 + 1, i2, i2 + 1)
             if len1 > len2:
                 for i in range(s1 + len2, e1):
-                    yield ('delete', i, i+1, e2, e2)
+                    yield ('delete', i, i + 1, e2, e2)
             if len2 > len1:
                 for i in range(s2 + len1, e2):
-                    yield ('insert', s1, s1, i, i+1)
+                    yield ('insert', s1, s1, i, i + 1)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     TEXT_FILE = sys.argv[1]
     JSON_FILE = sys.argv[2]
     OUTPUT_FILE = sys.argv[3]
@@ -114,4 +110,4 @@ if __name__=='__main__':
 
     out = align(alignment, ms)
 
-    json.dump(out, open(OUTPUT_FILE, 'w'), indent=2)
+    json.dump(out, open(OUTPUT_FILE, 'w'), indent = 2)
