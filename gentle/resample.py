@@ -3,7 +3,7 @@ import subprocess
 
 from contextlib import contextmanager
 
-FFMPEG = 'ffmpeg'
+FFMPEG = '/home/wenhao/.linuxbrew/bin/ffmpeg'
 
 
 def resample(infile, outfile, offset = None, duration = None):
@@ -22,9 +22,8 @@ def resample(infile, outfile, offset = None, duration = None):
     else:
         duration = ' -t ' + str(duration)
 
-    cmd = 'zsh -c "{}"'.format(
-        FFMPEG + ' -loglevel quiet -y ' + offset + ' -i ' + infile + duration + ' -ac 1 -ar 8000 -acodec ' \
-                                                                                'pcm_s16le ' + outfile)
+    cmd = FFMPEG + ' -loglevel quiet -y ' + offset + ' -i ' + infile + duration + ' -ac 1 -ar 8000 -acodec ' \
+                                                                                  'pcm_s16le ' + outfile
     return subprocess.call(cmd, shell = True)
 
 
